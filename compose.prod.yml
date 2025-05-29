@@ -1,0 +1,12 @@
+services:
+  badi-tracker:
+    image: "ghcr.io/beingflo/badi-tracker:0.1.0"
+    container_name: badi-tracker
+    env_file: ".env"
+    restart: unless-stopped
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true

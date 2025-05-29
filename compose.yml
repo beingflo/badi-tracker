@@ -1,0 +1,6 @@
+services:
+  badi-tracker:
+    image: "badi-tracker"
+    container_name: badi-tracker
+    env_file: ".env"
+    restart: unless-stopped
