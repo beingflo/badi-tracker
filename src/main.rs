@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{env, time::Duration};
 
 use serde::Serialize;
 use tokio::{task, time};
@@ -8,15 +8,22 @@ use reqwest::Client;
 
 #[tokio::main]
 async fn main() {
-    let task = task::spawn(async {
+    println!("Starting badi-tracker");
+    dotenvy::dotenv().unwrap();
+
+    let (_, emitter) = env::vars().find(|v| v.0.eq("EMITTER")).unwrap();
+    println!("Loaded emmiter from .env file");
+
+    let task = task::spawn(async move {
         let mut interval = time::interval(Duration::from_secs(5));
 
         loop {
             interval.tick().await;
-            get_case_count().await.unwrap();
+            record_visitors(emitter.clone()).await.unwrap();
         }
     });
 
+    println!("Starting task");
     task.await.unwrap();
 }
 
@@ -26,7 +33,7 @@ struct Body {
     payload: i32,
 }
 
-async fn get_case_count() -> Result<()> {
+async fn record_visitors(emitter: String) -> Result<()> {
     let (mut socket, _) = connect("wss://badi-public.crowdmonitor.ch:9591/api").unwrap();
     socket.send("all".into())?;
     let msg = socket.read()?.into_text()?.to_string();
@@ -56,10 +63,7 @@ async fn get_case_count() -> Result<()> {
         .post("http://localhost:3000/api/data")
         .body(serde_json::to_string(&body).unwrap())
         .header("Content-Type", "application/json")
-        .header(
-            "emitter",
-            "9Mu6lZEZ87n4DWtflMgiBqGVzaQRRM5CKus366Zo5KLi9qagCST8OlleFSiUgv8K",
-        )
+        .header("emitter", emitter)
         .send()
         .await
         .unwrap();
