@@ -14,7 +14,7 @@ async fn main() {
     println!("Loaded emmiter from .env file");
 
     let task = task::spawn(async move {
-        let mut interval = time::interval(Duration::from_secs(5));
+        let mut interval = time::interval(Duration::from_secs(600));
 
         loop {
             interval.tick().await;
