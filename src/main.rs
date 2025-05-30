@@ -9,7 +9,6 @@ use reqwest::Client;
 #[tokio::main]
 async fn main() {
     println!("Starting badi-tracker");
-    dotenvy::dotenv().unwrap();
 
     let (_, emitter) = env::vars().find(|v| v.0.eq("EMITTER")).unwrap();
     println!("Loaded emmiter from .env file");
@@ -60,13 +59,15 @@ async fn record_visitors(emitter: String) -> Result<()> {
     };
 
     Client::new()
-        .post("http://localhost:3000/api/data")
+        .post("https://observatory.marending.dev/api/data")
         .body(serde_json::to_string(&body).unwrap())
         .header("Content-Type", "application/json")
         .header("emitter", emitter)
         .send()
         .await
         .unwrap();
+
+    println!("Recorded {} visitors", visitors);
 
     socket.close(None)?;
 
